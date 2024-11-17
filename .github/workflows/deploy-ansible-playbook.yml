@@ -1,0 +1,44 @@
+name: Ansible Playbook - Docker Configuration and Deploy Keycloak
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ansible/**
+  workflow_run:
+    workflows: ['Terraform Apply Infrastructure - Keycloak VM with OIDC']
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  ansible:
+    name: Deploy Ansible Playbook
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Retrieve the private key from secrets and set permissions
+        run: |
+          echo "${{ secrets.PRIVATE_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
+
+      - name: Add public IP
+        env:
+          PUBLIC_IP: ${{ secrets.PUBLIC_IP }}
+        run: |
+          echo -e "[all]\n$PUBLIC_IP" > hosts.ini
+
+      - name: Install Ansible
+        shell: bash
+        run: |
+          sudo apt update
+          sudo apt install -y ansible
+
+      - name: Run Ansible Playbook
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: False
+        run: |
+          ansible-playbook -i hosts.ini ansible/playbook.yml -u ${{ secrets.ADMIN_USERNAME }} --private-key private_key.pem --ssh-extra-args "-o StrictHostKeyChecking=no"

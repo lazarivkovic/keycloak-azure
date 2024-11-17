@@ -1,0 +1,20 @@
+---
+- name: Check if keycloak-azure repo already exists
+  become: false
+  stat:
+    path: /home/{{ user }}/keycloak-azure
+  register: keycloak_repo_cloned
+
+- name: Clone keycloak-azure repository
+  become: false
+  git:
+    repo: 'https://github.com/lazarivkovic/keycloak-azure'
+    dest: /home/{{ user }}/keycloak-azure
+    update: yes
+  when: not keycloak_repo_cloned.stat.exists
+
+- name: Deploy Keycloak
+  become: false
+  shell: ./up.sh --vm
+  args:
+    chdir: /home/{{ user }}/keycloak-azure/keycloak

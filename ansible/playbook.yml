@@ -1,0 +1,12 @@
+---
+- name: Configure and Install Docker on the Keykloak VM
+  hosts: all
+  become: true
+  roles:
+    - docker
+
+- name: Setup Keycloak Docker stack
+  hosts: all
+  become: true
+  roles:
+    - keycloak

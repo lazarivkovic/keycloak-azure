@@ -1,0 +1,52 @@
+name: Terraform Apply Infrastructure - Keycloak VM with OIDC
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - infra/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
+  ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+  ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
+  GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+
+jobs:
+  apply_infra:
+    name: Terraform Apply for Keycloak VM
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Initialize Terraform for Keycloak VM
+        working-directory: ./infra
+        run: terraform init
+
+      - name: Apply Terraform for Keycloak VM
+        working-directory: ./infra
+        run: terraform apply -auto-approve
+
+      - name: Set Terraform outputs as GitHub secrets
+        working-directory: ./infra
+        run: |
+          PUBLIC_IP=$(terraform output -raw keycloak_public_ip)
+          ADMIN_USERNAME=$(terraform output -raw admin_username)
+          PRIVATE_KEY=$(terraform output -raw private_key_pem)
+          
+          # Set the secrets
+          echo "$PUBLIC_IP" | gh secret set PUBLIC_IP
+          echo "$ADMIN_USERNAME" | gh secret set ADMIN_USERNAME
+          echo "$PRIVATE_KEY" | gh secret set PRIVATE_KEY
