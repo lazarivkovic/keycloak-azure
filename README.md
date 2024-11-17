@@ -11,4 +11,5 @@ This project provides the creation of a virtual machine (VM) in Azure Cloud, set
 - **CI/CD Pipeline**: GitHub Actions used for deploying, configuring, and destroying the project.
 
 ## License
-This project is licensed under the This project is licensed under the Attribution-NonCommercial 4.0 International License - see the [https://creativecommons.org/licenses/by-nc/4.0/deed.en](LICENSE) file for details.
+This project is licensed under the This project is licensed under the Attribution-NonCommercial 4.0 International License - see the [LICENSE](https://creativecommons.org/licenses/by-nc/4.0/deed.en)
+file for details.
